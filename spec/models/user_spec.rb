@@ -13,28 +13,23 @@ RSpec.describe User, type: :model do
     it { should validate_length_of(:email).is_at_most(255) }
     it { should validate_uniqueness_of(:email).case_insensitive }
 
-    it "accepts valid emails" do
-      valid_emails = %w[user@example.com USER@foo.COM A_US-ER@foo.bar.org first.last@foo.jp alice+bob@baz.cn]
-      valid_emails.each do |v_e|
-        subject.email = v_e
-        expect(subject).to be_valid
-      end
-    end
-
-    it "rejects invalid emails" do
-      invalid_emails = %w[user@example,com user_at_foo.org user.name@example.
-                          foo@bar_baz.com foo@bar+baz.com foo@bar..com]
-      invalid_emails.each do |i_e|
-        subject.email =  i_e
-        expect(subject).to be_invalid
-      end
-    end
-
     it "is saved as lower-case" do
       mixed_case_email = "Foo@ExAMPle.CoM"
       subject.email = mixed_case_email
       subject.save
       expect(subject.reload.email).to eq(mixed_case_email.downcase)
+    end
+
+    context "with valid emails" do
+      valid_emails = %w[user@example.com USER@foo.COM A_US-ER@foo.bar.org
+                        first.last@foo.jp alice+bob@baz.cn]
+      it_behaves_like('emails', valid_emails, :be_valid, :valid)
+    end
+
+    context "with invalid emails" do
+      invalid_emails = %w[user@example,com user_at_foo.org user.name@example.
+                          foo@bar_baz.com foo@bar+baz.com foo@bar..com]
+      it_behaves_like('emails', invalid_emails, :be_invalid, :invalid)
     end
   end
 
