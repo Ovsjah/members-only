@@ -2,8 +2,8 @@ require 'rails_helper'
 
 RSpec.describe UsersController, type: :controller do
   let(:user) { create(:user) }
-  let(:valid_attributes) { {user: attributes_for(:user)} }
-  let(:invalid_attributes) { {user: attributes_for(:user).invert} }
+  let(:valid_params) { {user: attributes_for(:user)} }
+  let(:invalid_params) { {user: attributes_for(:user).invert} }
 
   describe "GET #new" do
     before(:each) { get :new }
@@ -23,26 +23,26 @@ RSpec.describe UsersController, type: :controller do
   end
 
   describe "POST #create" do
-    context "with valid attributes" do
+    context "with valid params" do
       it "creates a user" do
         expect {
-          post :create, params: valid_attributes
+          post :create, params: valid_params
         }.to change(User, :count).by(1)
       end
     end
 
-    context "with invalid attributes" do
-      before(:each) { post :create, params: invalid_attributes }
+    context "with invalid params" do
+      before(:each) { post :create, params: invalid_params }
       render_views
 
       it "doesn't create a user" do
         expect {
-          post :create, params: invalid_attributes
+          post :create, params: invalid_params
         }.not_to change(User, :count)
       end
 
       it "renders the new template" do
-        post :create, params: invalid_attributes
+        post :create, params: invalid_params
         expect(response).to render_template('new')
       end
 

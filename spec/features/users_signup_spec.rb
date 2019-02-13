@@ -25,13 +25,9 @@ RSpec.feature "UsersSignups", type: :feature do
   end
 
   context "with invalid signup information" do
-    it "displays the error messages" do
-      fill_in 'Name', with: ''
-      fill_in 'Email', with: ''
-      fill_in 'Password', with: ''
-      fill_in "Password confirmation", with: ''
-      click_button "Become a member"
+    before(:each) { click_button "Become a member" }
 
+    it "displays the error messages" do
       expect(page).to have_text("The form contains 4 errors")
     end
 
