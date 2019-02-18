@@ -1,4 +1,6 @@
 class UsersController < ApplicationController
+  include Signinable
+
   before_action :get_user, except: %i[index new create]
 
   def new
@@ -9,7 +11,9 @@ class UsersController < ApplicationController
     @user = User.new(user_params)
 
     if @user.save
-      redirect_to @user, notice: "Congrats! You're a member now."
+      sign_in @user
+      flash[:success] = "Congrats! You're a member now."
+      redirect_to @user
     else
       render :new
     end

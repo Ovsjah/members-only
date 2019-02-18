@@ -3,6 +3,10 @@ require 'rails_helper'
 RSpec.describe User, type: :model do
   subject { create(:user) }
 
+  before(:each) do
+    subject.send(:remember)
+  end
+
   describe '#name' do
     it { should validate_presence_of(:name) }
     it { should validate_length_of(:name).is_at_most(50) }
@@ -40,6 +44,40 @@ RSpec.describe User, type: :model do
     it "should be present (nonblank)" do
       subject.password = subject.password_confirmation = ' ' * 6
       expect(subject).to be_invalid
+    end
+  end
+
+  describe '#remember_token' do
+    it { expect(subject).to respond_to(:remember_token) }
+    it { expect(subject.remember_token).to be_present }
+  end
+
+  describe '#remember' do
+    let(:user_from_database) { User.find(subject.to_param) }
+
+    it "sets a remember token" do
+      expect(subject.remember_token).to be_present
+    end
+
+    it "sets a remember digest" do
+      expect(subject.remember_digest).to eq(user_from_database.remember_digest)
+    end
+  end
+
+  describe '#forget' do
+    it "nullifies remember digest" do
+      subject.send(:forget)
+      expect(subject.remember_digest).to be_nil
+    end
+  end
+
+  describe '#authenticated?' do
+    it "returns true if given token equals the digest in database" do
+      expect(subject.authenticated?(:remember, subject.remember_token)).to be(true)
+    end
+
+    it "returns false otherwise" do
+      expect(subject.authenticated?(:remember, "New token")).to be(false)
     end
   end
 end

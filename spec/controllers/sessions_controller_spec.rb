@@ -2,6 +2,7 @@ require 'rails_helper'
 
 RSpec.describe SessionsController, type: :controller do
   include Signinable
+  include Rememberable
   include SessionsHelper
 
   let(:user) { create(:user) }
@@ -17,17 +18,38 @@ RSpec.describe SessionsController, type: :controller do
     render_views
 
     let(:valid_params) { {email: user.email, password: user.password} }
+    let(:with_remembering) { valid_params.merge(remember_me: '1') }
     let(:invalid_params) { {email: '', password: '' } }
 
     context "with valid params" do
       before(:each) { post :create, params: {session: valid_params} }
 
-      it "signs in the user" do
+      it "stores the user_id in session" do
+        expect(session[:user_id]).to be_present
+      end
+
+      it "signs in a user" do
         expect(signed_in?).to be true
       end
 
       it "redirects to the show view" do
         expect(response).to redirect_to(user)
+      end
+    end
+
+    context "with remembering" do
+      before(:each) { post :create, params: {session: with_remembering} }
+
+      it "stores the user's id in cookies" do
+        expect(cookies[:user_id]).to be_present
+      end
+
+      it "stores the user's remember token in cookies" do
+        expect(cookies[:remember_token]).to be_present
+      end
+
+      it "remembers a user" do
+        expect(remembered?).to be true
       end
     end
 
@@ -45,21 +67,35 @@ RSpec.describe SessionsController, type: :controller do
   end
 
   describe "DELETE #destroy" do
-    before(:each) do
-      sign_in(user)
-      delete :destroy, params: {id: user.to_param}
+    context "with signing in" do
+      before(:each) do
+        sign_in(user)
+        delete :destroy, params: {id: user.to_param}
+      end
+
+      it "deletes the user's session" do
+        expect(session).to be_empty
+      end
+
+      it "redirects to the home page" do
+        expect(response).to redirect_to(root_path)
+      end
     end
 
-    it "deletes the user's session" do
-      expect(session).to be_empty
-    end
+    context "with remembering" do
+      before(:each) do
+        remember(user)
+        delete :destroy, params: {id: user.to_param}
+        cookies.update(response.cookies)
+      end
 
-    it "removes the current user" do
-      expect(current_user).to be_nil
-    end
+      it "deletes the user's id from cookies" do
+        expect(cookies[:user_id]).to be_nil
+      end
 
-    it "redirects to the home page" do
-      expect(response).to redirect_to(root_path)
+      it "deletes the user's remember token from cookies" do
+        expect(cookies[:remember_token]).to be_nil
+      end
     end
   end
 end

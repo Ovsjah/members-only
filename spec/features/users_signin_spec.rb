@@ -29,6 +29,10 @@ RSpec.feature "UsersSignins", type: :feature do
       it "displays the home page" do
         expect(page).to have_link("Become a member!")
       end
+
+      it "doesn't display the account links" do
+        expect(page).not_to have_link("Account")
+      end
     end
   end
 

@@ -2,13 +2,24 @@ require 'rails_helper'
 
 RSpec.describe SessionsHelper, type: :helper do
   include Signinable
+  include Rememberable
 
   let(:user) { create(:user) }
   before(:each) { sign_in(user) }
 
   describe 'current_user' do
-    it "returns current user" do
-      expect(current_user).to eq(user)
+    context "with singing in" do
+      it "returns the current user" do
+        expect(current_user).to eq(user)
+      end
+    end
+
+    context "with remembering" do
+      it "returns the current user" do
+        sign_out
+        remember(user)
+        expect(current_user).to eq(user)
+      end
     end
   end
 
