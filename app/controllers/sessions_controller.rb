@@ -1,15 +1,13 @@
 class SessionsController < ApplicationController
-  include Signinable
-  include Rememberable
-  include SessionsHelper
-
+  include Signinable, Rememberable, Redirectable, SessionsHelper
+  
   def create
     @user = User.find_by(email: params[:session][:email].downcase)
-    
+
     if @user&.authenticate(params[:session][:password])
       params[:session][:remember_me] == '1' ? remember(@user) : sign_in(@user)
       flash[:success] = "What's up bro?"
-      redirect_to @user
+      redirect_back_or_to @user
     else
       flash.now[:danger] = "Invalid email/password combination"
       render :new
