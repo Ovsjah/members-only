@@ -23,7 +23,7 @@ class User < ApplicationRecord
   def authenticated?(type, token)
     digest = send("#{type}_digest")
     return false unless digest
-    User.digest(token) == digest
+    self.class.digest(token) == digest
   end
 
 private
@@ -33,8 +33,8 @@ private
     end
 
     def remember
-      self.remember_token = User.new_token
-      update_attribute(:remember_digest, User.digest(remember_token))
+      self.remember_token = self.class.new_token
+      update_attribute(:remember_digest, self.class.digest(remember_token))
     end
 
     def forget
